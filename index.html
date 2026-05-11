@@ -174,23 +174,46 @@
             <p class="mb-0">&copy; 2026 Legalink. Todos los derechos reservados.</p>
         </div>
     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
-        $(function(){
-            $("#frmContacto").submit(function(e){
-                e.preventDefault();
-                const nombre = $("#nombre").val().trim();
-                const email = $("#email").val().trim();
-                if(!nombre || !email){
-                    $("#resultadoMensaje").html(`<p style="color:red;">Por favor, llena los campos requeridos.</p>`);
-                    return false;
+
+    const API_URL = 'http://localhost:3000'; //kkkkkk
+    $(function(){
+        $("#frmContacto").submit(function(e){
+        e.preventDefault();
+            const nombre = $("#nombre").val().trim();
+            const email = $("#email").val().trim();
+            const mensaje = $("#mensaje").val().trim();
+
+            if(!nombre || !email || !mensaje){
+                $("#resultadoMensaje").html(`<p style="color:red;">Por favor, llena todos los campos.</p>`);
+                return false;
+            }
+
+            fetch(`${API_URL}/api/consultas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, email, mensaje })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success){
+                    $("#resultadoMensaje").html(`
+                        <div class="alert alert-success mt-3">
+                            <i class="fa-solid fa-check-circle me-2"></i>¡Gracias ${nombre}! Tu mensaje ha sido enviado.
+                        </div>
+                    `);
+                    $("#frmContacto")[0].reset();
+                } else {
+                    $("#resultadoMensaje").html(`<p style="color:red;">${data.mensaje}</p>`);
                 }
-                $("#resultadoMensaje").html(`<div class="alert alert-success mt-3"><i class="fa-solid fa-check-circle me-2"></i>¡Gracias ${nombre}! Tu mensaje ha sido enviado.</div>`);
-                $("#frmContacto")[0].reset();
-            });
+            })
+            .catch(() => {
+                $("#resultadoMensaje").html(`<p style="color:red;">Error al conectar con el servidor.</p>`);
         });
-    </script>
+    });
+});
+</script>
 </body>
 </html>

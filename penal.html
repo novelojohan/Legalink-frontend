@@ -140,49 +140,60 @@
 </html>
 
 <script type="text/javascript">
-    $(function(){
-        
-        $('#contactoModal').on('show.bs.modal', function (event) {
-           
-            var button = $(event.relatedTarget);
-            var nombreAbogado = button.data('abogado');
-            
-          
-            var modal = $(this);
-            modal.find('.modal-title').text('Contactar a ' + nombreAbogado);
-            modal.find('#modalAbogado').val(nombreAbogado);
-            
-            
-            $('#modalResultado').html('');
-            $('#frmContactoModal')[0].reset();
-        });
+const API_URL = 'http://localhost:3000'; // Cambia esto por tu URL de Render al desplegar
 
-        
-        $("#frmContactoModal").submit(function(e){
-            e.preventDefault(); 
-            
-            const abogado = $("#modalAbogado").val();
-            const nombre = $("#modalNombre").val().trim();
-            const email = $("#modalEmail").val().trim();
-            const mensaje = $("#modalMensaje").val().trim();
-            
-            if(!nombre || !email || !mensaje){
-                $("#modalResultado").html(`<p style="color:red;">Debes llenar todos tus datos.</p>`);
-                return false;
+$(function(){
+    $('#contactoModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var nombreAbogado = button.data('abogado');
+        var modal = $(this);
+        modal.find('.modal-title').text('Contactar a ' + nombreAbogado);
+        modal.find('#modalAbogado').val(nombreAbogado);
+        $('#modalResultado').html('');
+        $('#frmContactoModal')[0].reset();
+    });
+
+    $("#frmContactoModal").submit(function(e){
+        e.preventDefault();
+        const abogado = $("#modalAbogado").val();
+        const nombre = $("#modalNombre").val().trim();
+        const email = $("#modalEmail").val().trim();
+        const mensaje = $("#modalMensaje").val().trim();
+
+        if(!nombre || !email || !mensaje){
+            $("#modalResultado").html(`<p style="color:red;">Debes llenar todos tus datos.</p>`);
+            return false;
+        }
+
+        // Determinar especialidad según la página actual
+        const pagina = window.location.pathname;
+        let especialidad = null;
+        if (pagina.includes('penal')) especialidad = 'penal';
+        else if (pagina.includes('corporativo')) especialidad = 'corporativo';
+        else if (pagina.includes('familiar')) especialidad = 'familiar';
+
+        fetch(`${API_URL}/api/consultas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, email, mensaje, abogado, especialidad })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                $("#modalResultado").html(`
+                    <div class="alert alert-success mt-3 text-start">
+                        <i class="fa-solid fa-check-circle me-2"></i>
+                        <strong>¡Éxito!</strong> ${nombre}, tu consulta fue enviada a <strong>${abogado}</strong>.
+                    </div>
+                `);
+                $("#modalNombre, #modalEmail, #modalMensaje").val('');
+            } else {
+                $("#modalResultado").html(`<p style="color:red;">${data.mensaje}</p>`);
             }
-            
-           
-            $("#modalResultado").html(`
-                <div class="alert alert-success mt-3 text-start">
-                    <i class="fa-solid fa-check-circle me-2"></i>
-                    <strong>¡Éxito!</strong> ${nombre}, tu información fue enviada a <strong>${abogado}</strong>.
-                </div>
-            `);
-            
-            
-            $("#modalNombre").val('');
-            $("#modalEmail").val('');
-            $("#modalMensaje").val('');
+        })
+        .catch(() => {
+            $("#modalResultado").html(`<p style="color:red;">Error al conectar con el servidor.</p>`);
         });
     });
+});
 </script>
