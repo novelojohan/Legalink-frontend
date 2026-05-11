@@ -138,7 +138,7 @@
 </html>
 
 <script type="text/javascript">
-const API_URL = 'http://localhost:3000'; // Cambia esto por tu URL de Render al desplegar
+const API_URL = 'https://legalink-backend-2.onrender.com'; 
 
 $(function(){
     $('#contactoModal').on('show.bs.modal', function (event) {
@@ -163,7 +163,7 @@ $(function(){
             return false;
         }
 
-        // Determinar especialidad según la página actual
+        
         const pagina = window.location.pathname;
         let especialidad = null;
         if (pagina.includes('penal')) especialidad = 'penal';
